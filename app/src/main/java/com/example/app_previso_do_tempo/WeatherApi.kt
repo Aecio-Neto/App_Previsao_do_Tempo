@@ -22,7 +22,7 @@ interface WeatherService {
     ): Response<ForecastResponse>
 }
 
-// Dados retornados pela API atual
+
 data class OpenWeatherResponse(
     val name: String,
     val sys: SysData,
@@ -60,7 +60,7 @@ data class ForecastItem(
     val main: MainData
 )
 
-// Dados que o app exibe na tela
+
 data class WeatherDisplayData(
     val city: String,
     val country: String,
