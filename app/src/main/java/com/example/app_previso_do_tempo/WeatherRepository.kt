@@ -8,7 +8,7 @@ class WeatherRepository(
     private val api: WeatherService = ApiService.weatherService
 ) {
     suspend fun fetchWeather(city: String): WeatherDisplayData {
-        val cityQuery = city.trim() // Busca global (sem ",BR")
+        val cityQuery = city.trim() 
 
         val currentResponse = api.getCurrentWeather(cityQuery, apiKey = API_KEY)
         val forecastResponse = api.getForecast(cityQuery, apiKey = API_KEY)
