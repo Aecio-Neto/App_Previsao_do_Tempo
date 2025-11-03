@@ -1,46 +1,55 @@
 package com.example.app_previso_do_tempo
 
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
-/**
- * Repositório responsável por buscar dados do clima na OpenWeatherMap.
- */
 class WeatherRepository(
     private val api: WeatherService = ApiService.weatherService
 ) {
-
-
     suspend fun fetchWeather(city: String): WeatherDisplayData {
+        val cityQuery = city.trim() // Busca global (sem ",BR")
 
-        val cityQuery = "$city,BR"
+        val currentResponse = api.getCurrentWeather(cityQuery, apiKey = API_KEY)
+        val forecastResponse = api.getForecast(cityQuery, apiKey = API_KEY)
 
-        val response = api.getCurrentWeather(
-            cityQuery = cityQuery,
-            apiKey = API_KEY
-        )
+        if (currentResponse.code() == 404) {
+            throw IOException("Cidade não encontrada. Verifique o nome e tente novamente.")
+        }
 
-        if (response.isSuccessful) {
-            val apiData = response.body()
-            if (apiData != null) {
+        if (currentResponse.code() == 401) {
+            throw IOException("Erro 401: Chave de API inválida ou não ativada.")
+        }
+
+        if (currentResponse.isSuccessful && forecastResponse.isSuccessful) {
+            val current = currentResponse.body()
+            val forecast = forecastResponse.body()
+
+            if (current != null && forecast != null) {
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val todayForecasts = forecast.list.filter { it.dt_txt.startsWith(today) }
+
+                val tempMin = todayForecasts.minOfOrNull { it.main.temp_min }?.toInt() ?: current.main.temp_min.toInt()
+                val tempMax = todayForecasts.maxOfOrNull { it.main.temp_max }?.toInt() ?: current.main.temp_max.toInt()
+
+                val sdf = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("pt", "BR"))
+                val dateFormatted = sdf.format(Date())
 
                 return WeatherDisplayData(
-                    city = apiData.name,
-                    temperature = apiData.main.temp.toInt(),
-                    description = apiData.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() } ?: "Sem descrição",
-                    humidity = apiData.main.humidity,
-
-                    windSpeed = String.format("%.1f", apiData.wind.speed * 3.6).toDoubleOrNull() ?: 0.0,
-                    iconCode = apiData.weather.firstOrNull()?.icon ?: ""
+                    city = current.name,
+                    country = current.sys.country,
+                    temperature = current.main.temp.toInt(),
+                    description = current.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() } ?: "Sem descrição",
+                    humidity = current.main.humidity,
+                    windSpeed = String.format("%.1f", current.wind.speed * 3.6).toDoubleOrNull() ?: 0.0,
+                    iconCode = current.weather.firstOrNull()?.icon ?: "",
+                    tempMin = tempMin,
+                    tempMax = tempMax,
+                    dateText = dateFormatted.replaceFirstChar { it.uppercase() }
                 )
             }
         }
 
-
-        if (response.code() == 401) {
-            throw IOException("Erro 401: Chave de API inválida ou não ativada. Verifique o NetworkModule.kt e aguarde a ativação.")
-        }
-
-
-        throw IOException("Falha ao buscar dados do clima: Código ${response.code()}")
+        throw IOException("Falha ao buscar dados do clima. Verifique sua conexão ou tente novamente.")
     }
 }

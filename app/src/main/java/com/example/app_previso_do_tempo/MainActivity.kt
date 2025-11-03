@@ -7,7 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert // Adicionado para o ícone do botão "Sobre"
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog // Adicionado para a caixa de diálogo "Sobre"
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,24 +26,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Define um tema simples para o aplicativo
             MaterialTheme(colorScheme = lightColorScheme(
-                primary = Color(0xFF00BFFF), // Azul Claro
-                background = Color(0xFFE0F7FA) // Azul muito claro
+                primary = Color(0xFF00BFFF),
+                background = Color(0xFFE0F7FA)
             )) {
                 WeatherAppScreen()
             }
         }
     }
 }
-
-
-
 
 sealed class WeatherUiState {
     data object Loading : WeatherUiState()
@@ -55,34 +50,25 @@ class WeatherViewModel(
     private val repository: WeatherRepository = WeatherRepository()
 ) : ViewModel() {
 
-
     private val _uiState = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     val uiState: StateFlow<WeatherUiState> = _uiState
 
-
-    var cityInput by mutableStateOf("Cambé") // Cidade padrão
-
-
+    var cityInput by mutableStateOf("Cambé")
     var showAboutDialog by mutableStateOf(false)
 
     init {
-
         loadWeather(cityInput)
     }
 
     fun loadWeather(city: String) {
         if (city.isBlank()) return
-
         val cityQuery = city
-
         _uiState.value = WeatherUiState.Loading
         viewModelScope.launch {
             try {
-
                 val weather = repository.fetchWeather(cityQuery)
                 _uiState.value = WeatherUiState.Success(weather)
             } catch (e: IOException) {
-
                 _uiState.value = WeatherUiState.Error(e.message ?: "Erro de rede ou API key inválida.")
             } catch (e: Exception) {
                 _uiState.value = WeatherUiState.Error("Ocorreu um erro: ${e.message}")
@@ -91,8 +77,6 @@ class WeatherViewModel(
     }
 }
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
@@ -100,17 +84,15 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
     val cityInput = viewModel.cityInput
     val showAboutDialog = viewModel.showAboutDialog
 
-
     if (showAboutDialog) {
         AboutDialog(
             onDismiss = { viewModel.showAboutDialog = false },
-            nome = "Aécio Flávio de Paula Neto", //
-            ra = "09047082" //
+            nome = "Aécio Flávio de Paula Neto",
+            ra = "09047082"
         )
     }
 
     Scaffold(
-
         topBar = {
             TopAppBar(
                 title = { Text("Previsão do Tempo", color = Color.White) },
@@ -135,12 +117,10 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                         colors = listOf(Color(0xFF87CEEB), Color(0xFFE0F7FA))
                     )
                 )
-                .padding(paddingValues) // Aplica o padding da Scaffold
+                .padding(paddingValues)
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -167,11 +147,9 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E90FF)),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-
                     Text("🔎", fontSize = 20.sp)
                 }
             }
-
 
             when (state) {
                 WeatherUiState.Loading -> LoadingState()
@@ -182,14 +160,8 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
     }
 }
 
-
-
 @Composable
-fun AboutDialog(
-    onDismiss: () -> Unit,
-    nome: String,
-    ra: String
-) {
+fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -206,17 +178,12 @@ fun AboutDialog(
                     color = Color(0xFF1E90FF)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Text("Desenvolvido por:", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                 Text(nome, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Text("RA:", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                 Text(ra, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-
                 Spacer(modifier = Modifier.height(24.dp))
-
                 Button(
                     onClick = onDismiss,
                     shape = RoundedCornerShape(12.dp),
@@ -228,8 +195,6 @@ fun AboutDialog(
         }
     }
 }
-
-
 
 @Composable
 fun LoadingState() {
@@ -252,18 +217,32 @@ fun ErrorState(message: String) {
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("⚠️ Erro na Previsão", style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(message, style = MaterialTheme.typography.bodyLarge, color = Color.White)
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Dica: Verifique sua chave API no arquivo NetworkModule.kt e aguarde a ativação (erro 401).",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.8f)
+                text = "⚠️ Ocorreu um erro",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            if (!message.contains("Cidade não encontrada", ignoreCase = true)) {
+                Text(
+                    "Dica: Verifique sua chave API no arquivo NetworkModule.kt (erro 401).",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }
+
 
 @Composable
 fun WeatherCard(data: WeatherDisplayData) {
@@ -280,20 +259,29 @@ fun WeatherCard(data: WeatherDisplayData) {
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Nome da cidade + país
             Text(
-                text = data.city,
+                text = "${data.city}, ${data.country}",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E90FF) // Azul forte
+                color = Color(0xFF1E90FF)
             )
+
+            // Data
+            Text(
+                text = data.dateText,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray,
+                fontWeight = FontWeight.Medium
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-
+            // Temperatura principal
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-
                 val emoji = when {
                     data.description.contains("chuva", ignoreCase = true) -> "🌧️"
                     data.description.contains("sol", ignoreCase = true) || data.description.contains("limpo", ignoreCase = true) -> "☀️"
@@ -301,7 +289,6 @@ fun WeatherCard(data: WeatherDisplayData) {
                     else -> "❓"
                 }
                 Text(text = emoji, fontSize = 60.sp, modifier = Modifier.padding(end = 16.dp))
-
                 Text(
                     text = "${data.temperature}°C",
                     style = MaterialTheme.typography.displayLarge,
@@ -309,32 +296,34 @@ fun WeatherCard(data: WeatherDisplayData) {
                     color = Color.DarkGray
                 )
             }
+
+            // Máx / Mín
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Máx: ${data.tempMax}°C  |  Mín: ${data.tempMin}°C",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray,
+                fontWeight = FontWeight.Medium
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = data.description,
                 style = MaterialTheme.typography.headlineSmall,
                 color = Color.Gray
             )
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // Detalhes (Umidade e Vento)
+            Spacer(modifier = Modifier.height(24.dp))
             Divider(color = Color(0xFFDDDDDD), thickness = 1.dp)
             Spacer(modifier = Modifier.height(16.dp))
 
-            WeatherDetailRow(
-                icon = "💧",
-                label = "Umidade",
-                value = "${data.humidity}%"
-            )
+            WeatherDetailRow(icon = "💧", label = "Umidade", value = "${data.humidity}%")
             Spacer(modifier = Modifier.height(12.dp))
-            WeatherDetailRow(
-                icon = "💨",
-                label = "Vento",
-                value = "${data.windSpeed} km/h"
-            )
+            WeatherDetailRow(icon = "💨", label = "Vento", value = "${data.windSpeed} km/h")
         }
     }
 }
+
 
 @Composable
 fun WeatherDetailRow(icon: String, label: String, value: String) {
@@ -348,6 +337,11 @@ fun WeatherDetailRow(icon: String, label: String, value: String) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
         }
-        Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = Color.DarkGray)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.DarkGray
+        )
     }
 }
