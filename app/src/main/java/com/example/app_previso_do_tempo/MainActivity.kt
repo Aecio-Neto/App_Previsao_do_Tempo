@@ -259,7 +259,7 @@ fun WeatherCard(data: WeatherDisplayData) {
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Nome da cidade + país
+           
             Text(
                 text = "${data.city}, ${data.country}",
                 style = MaterialTheme.typography.headlineLarge,
@@ -277,7 +277,7 @@ fun WeatherCard(data: WeatherDisplayData) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Temperatura principal
+         
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -297,7 +297,7 @@ fun WeatherCard(data: WeatherDisplayData) {
                 )
             }
 
-            // Máx / Mín
+        
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Máx: ${data.tempMax}°C  |  Mín: ${data.tempMin}°C",
