@@ -40,7 +40,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ---------- Estados e ViewModel ----------
 
 sealed class WeatherUiState {
     data object Loading : WeatherUiState()
@@ -78,7 +77,6 @@ class WeatherViewModel(
     }
 }
 
-// ---------- Tela Principal ----------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +90,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
             onDismiss = { viewModel.showAboutDialog = false },
             nome = "Aécio Flávio de Paula Neto",
             ra = "09047082",
-            curso = "Análise e Desenvolvimento de Sistemas" // ✅ Adicione seu curso
+            curso = "Análise e Desenvolvimento de Sistemas"
         )
     }
 
@@ -125,7 +123,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Campo e botão de pesquisa
+           
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,7 +154,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                 }
             }
 
-            // Exibe os estados
+      
             when (state) {
                 WeatherUiState.Loading -> LoadingState()
                 is WeatherUiState.Success -> WeatherCard(data = (state as WeatherUiState.Success).data)
@@ -166,7 +164,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
     }
 }
 
-// ---------- Diálogo "Sobre" ----------
+
 
 @Composable
 fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String, curso: String) {
@@ -210,7 +208,7 @@ fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String, curso: String) 
     }
 }
 
-// ---------- Estados da tela ----------
+
 
 @Composable
 fun LoadingState() {
@@ -259,7 +257,7 @@ fun ErrorState(message: String) {
     }
 }
 
-// ---------- Cartão do clima ----------
+
 
 @Composable
 fun WeatherCard(data: WeatherDisplayData) {
