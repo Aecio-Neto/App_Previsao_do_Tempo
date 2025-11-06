@@ -22,44 +22,22 @@ interface WeatherService {
     ): Response<ForecastResponse>
 }
 
-
 data class OpenWeatherResponse(
     val name: String,
     val sys: SysData,
     val main: MainData,
     val weather: List<WeatherData>,
-    val wind: WindData
+    val wind: WindData,
+    val timezone: Int
 )
 
-data class SysData(
-    val country: String
-)
+data class SysData(val country: String)
+data class MainData(val temp: Double, val humidity: Int, val temp_min: Double, val temp_max: Double)
+data class WeatherData(val description: String, val icon: String)
+data class WindData(val speed: Double)
 
-data class MainData(
-    val temp: Double,
-    val humidity: Int,
-    val temp_min: Double,
-    val temp_max: Double
-)
-
-data class WeatherData(
-    val description: String,
-    val icon: String
-)
-
-data class WindData(
-    val speed: Double
-)
-
-data class ForecastResponse(
-    val list: List<ForecastItem>
-)
-
-data class ForecastItem(
-    val dt_txt: String,
-    val main: MainData
-)
-
+data class ForecastResponse(val list: List<ForecastItem>)
+data class ForecastItem(val dt_txt: String, val main: MainData, val pop: Double? = null)
 
 data class WeatherDisplayData(
     val city: String,
@@ -71,5 +49,7 @@ data class WeatherDisplayData(
     val iconCode: String,
     val tempMin: Int,
     val tempMax: Int,
-    val dateText: String
+    val dateText: String,
+    val rainChance: Int,
+    val localTime: String
 )

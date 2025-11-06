@@ -40,6 +40,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// ---------- Estados e ViewModel ----------
+
 sealed class WeatherUiState {
     data object Loading : WeatherUiState()
     data class Success(val data: WeatherDisplayData) : WeatherUiState()
@@ -62,11 +64,10 @@ class WeatherViewModel(
 
     fun loadWeather(city: String) {
         if (city.isBlank()) return
-        val cityQuery = city
         _uiState.value = WeatherUiState.Loading
         viewModelScope.launch {
             try {
-                val weather = repository.fetchWeather(cityQuery)
+                val weather = repository.fetchWeather(city)
                 _uiState.value = WeatherUiState.Success(weather)
             } catch (e: IOException) {
                 _uiState.value = WeatherUiState.Error(e.message ?: "Erro de rede ou API key inválida.")
@@ -76,6 +77,8 @@ class WeatherViewModel(
         }
     }
 }
+
+// ---------- Tela Principal ----------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +91,8 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
         AboutDialog(
             onDismiss = { viewModel.showAboutDialog = false },
             nome = "Aécio Flávio de Paula Neto",
-            ra = "09047082"
+            ra = "09047082",
+            curso = "Análise e Desenvolvimento de Sistemas" // ✅ Adicione seu curso
         )
     }
 
@@ -121,6 +125,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Campo e botão de pesquisa
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,6 +156,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                 }
             }
 
+            // Exibe os estados
             when (state) {
                 WeatherUiState.Loading -> LoadingState()
                 is WeatherUiState.Success -> WeatherCard(data = (state as WeatherUiState.Success).data)
@@ -160,8 +166,10 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
     }
 }
 
+// ---------- Diálogo "Sobre" ----------
+
 @Composable
-fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String) {
+fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String, curso: String) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -180,9 +188,15 @@ fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Desenvolvido por:", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                 Text(nome, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("RA:", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                 Text(ra, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Curso:", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+                Text(curso, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = onDismiss,
@@ -195,6 +209,8 @@ fun AboutDialog(onDismiss: () -> Unit, nome: String, ra: String) {
         }
     }
 }
+
+// ---------- Estados da tela ----------
 
 @Composable
 fun LoadingState() {
@@ -243,6 +259,7 @@ fun ErrorState(message: String) {
     }
 }
 
+// ---------- Cartão do clima ----------
 
 @Composable
 fun WeatherCard(data: WeatherDisplayData) {
@@ -259,7 +276,6 @@ fun WeatherCard(data: WeatherDisplayData) {
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-           
             Text(
                 text = "${data.city}, ${data.country}",
                 style = MaterialTheme.typography.headlineLarge,
@@ -267,9 +283,8 @@ fun WeatherCard(data: WeatherDisplayData) {
                 color = Color(0xFF1E90FF)
             )
 
-            // Data
             Text(
-                text = data.dateText,
+                text = "${data.dateText} • ${data.localTime}h",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray,
                 fontWeight = FontWeight.Medium
@@ -277,7 +292,6 @@ fun WeatherCard(data: WeatherDisplayData) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-         
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -297,7 +311,6 @@ fun WeatherCard(data: WeatherDisplayData) {
                 )
             }
 
-        
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Máx: ${data.tempMax}°C  |  Mín: ${data.tempMin}°C",
@@ -320,10 +333,11 @@ fun WeatherCard(data: WeatherDisplayData) {
             WeatherDetailRow(icon = "💧", label = "Umidade", value = "${data.humidity}%")
             Spacer(modifier = Modifier.height(12.dp))
             WeatherDetailRow(icon = "💨", label = "Vento", value = "${data.windSpeed} km/h")
+            Spacer(modifier = Modifier.height(12.dp))
+            WeatherDetailRow(icon = "🌧️", label = "Chuva", value = "${data.rainChance}%")
         }
     }
 }
-
 
 @Composable
 fun WeatherDetailRow(icon: String, label: String, value: String) {

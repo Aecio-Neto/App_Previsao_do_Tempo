@@ -8,18 +8,13 @@ class WeatherRepository(
     private val api: WeatherService = ApiService.weatherService
 ) {
     suspend fun fetchWeather(city: String): WeatherDisplayData {
-        val cityQuery = city.trim() 
+        val cityQuery = city.trim()
 
         val currentResponse = api.getCurrentWeather(cityQuery, apiKey = API_KEY)
         val forecastResponse = api.getForecast(cityQuery, apiKey = API_KEY)
 
-        if (currentResponse.code() == 404) {
-            throw IOException("Cidade não encontrada. Verifique o nome e tente novamente.")
-        }
-
-        if (currentResponse.code() == 401) {
-            throw IOException("Erro 401: Chave de API inválida ou não ativada.")
-        }
+        if (currentResponse.code() == 404) throw IOException("Cidade não encontrada. Verifique o nome e tente novamente.")
+        if (currentResponse.code() == 401) throw IOException("Erro 401: Chave de API inválida ou não ativada.")
 
         if (currentResponse.isSuccessful && forecastResponse.isSuccessful) {
             val current = currentResponse.body()
@@ -31,9 +26,14 @@ class WeatherRepository(
 
                 val tempMin = todayForecasts.minOfOrNull { it.main.temp_min }?.toInt() ?: current.main.temp_min.toInt()
                 val tempMax = todayForecasts.maxOfOrNull { it.main.temp_max }?.toInt() ?: current.main.temp_max.toInt()
+                val rainChance = ((todayForecasts.maxOfOrNull { it.pop ?: 0.0 } ?: 0.0) * 100).toInt()
 
                 val sdf = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("pt", "BR"))
                 val dateFormatted = sdf.format(Date())
+
+                val timezoneOffset = current.timezone * 1000L
+                val cityTime = Date(System.currentTimeMillis() + timezoneOffset - TimeZone.getDefault().rawOffset)
+                val timeFormatted = SimpleDateFormat("HH:mm", Locale("pt", "BR")).format(cityTime)
 
                 return WeatherDisplayData(
                     city = current.name,
@@ -45,7 +45,9 @@ class WeatherRepository(
                     iconCode = current.weather.firstOrNull()?.icon ?: "",
                     tempMin = tempMin,
                     tempMax = tempMax,
-                    dateText = dateFormatted.replaceFirstChar { it.uppercase() }
+                    dateText = dateFormatted.replaceFirstChar { it.uppercase() },
+                    rainChance = rainChance,
+                    localTime = timeFormatted
                 )
             }
         }
