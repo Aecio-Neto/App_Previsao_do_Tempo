@@ -21,19 +21,24 @@ class WeatherRepository(
             val forecast = forecastResponse.body()
 
             if (current != null && forecast != null) {
-                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                val todayForecasts = forecast.list.filter { it.dt_txt.startsWith(today) }
+                // 🔹 Calcula data e hora locais com base no timezone da cidade
+                val timezoneOffset = current.timezone * 1000L
+                val localTimeMillis = System.currentTimeMillis() + timezoneOffset - TimeZone.getDefault().rawOffset
+                val cityDate = Date(localTimeMillis)
+
+                val dateFormatter = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("pt", "BR"))
+                val timeFormatter = SimpleDateFormat("HH:mm", Locale("pt", "BR"))
+
+                val dateFormatted = dateFormatter.format(cityDate)
+                val timeFormatted = timeFormatter.format(cityDate)
+
+
+                val cityDay = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cityDate)
+                val todayForecasts = forecast.list.filter { it.dt_txt.startsWith(cityDay) }
 
                 val tempMin = todayForecasts.minOfOrNull { it.main.temp_min }?.toInt() ?: current.main.temp_min.toInt()
                 val tempMax = todayForecasts.maxOfOrNull { it.main.temp_max }?.toInt() ?: current.main.temp_max.toInt()
                 val rainChance = ((todayForecasts.maxOfOrNull { it.pop ?: 0.0 } ?: 0.0) * 100).toInt()
-
-                val sdf = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("pt", "BR"))
-                val dateFormatted = sdf.format(Date())
-
-                val timezoneOffset = current.timezone * 1000L
-                val cityTime = Date(System.currentTimeMillis() + timezoneOffset - TimeZone.getDefault().rawOffset)
-                val timeFormatted = SimpleDateFormat("HH:mm", Locale("pt", "BR")).format(cityTime)
 
                 return WeatherDisplayData(
                     city = current.name,
