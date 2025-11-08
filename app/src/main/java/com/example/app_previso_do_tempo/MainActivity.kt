@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+
 sealed class WeatherUiState {
     data object Loading : WeatherUiState()
     data class Success(val data: WeatherDisplayData) : WeatherUiState()
@@ -76,6 +77,7 @@ class WeatherViewModel(
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,7 +125,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-           
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,7 +156,7 @@ fun WeatherAppScreen(viewModel: WeatherViewModel = viewModel()) {
                 }
             }
 
-      
+
             when (state) {
                 WeatherUiState.Loading -> LoadingState()
                 is WeatherUiState.Success -> WeatherCard(data = (state as WeatherUiState.Success).data)
@@ -290,16 +292,29 @@ fun WeatherCard(data: WeatherDisplayData) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+
+            val isDay = data.iconCode.endsWith("d")
+            val emoji = when {
+                data.description.contains("chuva", ignoreCase = true) ||
+                        data.iconCode.startsWith("09") ||
+                        data.iconCode.startsWith("10") ||
+                        data.iconCode.startsWith("11") -> "🌧️"
+
+                data.description.contains("nuvens", ignoreCase = true) ||
+                        data.iconCode.startsWith("02") ||
+                        data.iconCode.startsWith("03") ||
+                        data.iconCode.startsWith("04") -> "☁️"
+
+                data.iconCode.startsWith("13") -> "❄️"
+                data.iconCode.startsWith("50") -> "🌫️"
+
+                else -> if (isDay) "☀️" else "🌙"
+            }
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                val emoji = when {
-                    data.description.contains("chuva", ignoreCase = true) -> "🌧️"
-                    data.description.contains("sol", ignoreCase = true) || data.description.contains("limpo", ignoreCase = true) -> "☀️"
-                    data.description.contains("nuvens", ignoreCase = true) -> "☁️"
-                    else -> "❓"
-                }
                 Text(text = emoji, fontSize = 60.sp, modifier = Modifier.padding(end = 16.dp))
                 Text(
                     text = "${data.temperature}°C",
